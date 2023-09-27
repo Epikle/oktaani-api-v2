@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { swagger } from '@elysiajs/swagger';
+import swagger from '@elysiajs/swagger';
 
 import { todoRoutes } from './oktaani-todo';
 
