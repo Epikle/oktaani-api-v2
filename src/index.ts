@@ -2,19 +2,21 @@ import { Elysia, t } from 'elysia';
 import swagger from '@elysiajs/swagger';
 
 import { todoRoutes } from './oktaani-todo';
+import { errorHandler } from './errorHandler';
 
 const app = new Elysia()
   .use(
     swagger({
       documentation: {
         info: {
-          title: 'Oktaani API v3',
+          title: 'Oktaani API v2',
           description: 'This is the documentation for my API.',
-          version: '3.0.0',
+          version: '2.0.1',
         },
       },
     })
   )
+  .use(errorHandler)
   .get('/health', () => 'OK', {
     response: t.String({ description: 'Returns OK string for health check.' }),
     detail: {
@@ -22,7 +24,7 @@ const app = new Elysia()
       tags: ['health'],
     },
   })
-  .group('/v3', { detail: { tags: ['v3'] } }, (app) => app.use(todoRoutes))
+  .group('/v2', { detail: { tags: ['v2'] } }, (app) => app.use(todoRoutes))
   .listen(process.env.PORT ?? 5000);
 
 console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
