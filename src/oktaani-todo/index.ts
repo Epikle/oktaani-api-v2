@@ -1,19 +1,41 @@
-import { Elysia, t } from 'elysia';
+import { Elysia, NotFoundError, t } from 'elysia';
+import { MongoError, ObjectId } from 'mongodb';
+
+import { db } from '../db';
+import { type Todo, todoModel } from './model';
 
 export const todoRoutes = new Elysia({ prefix: '/todo' })
-  .get('/', () => ({
-    message: 'todo',
-  }))
-  .post('/', ({ body }) => ({ id: 123, ...body }), {
-    body: t.Object({
-      username: t.String(),
-      password: t.String(),
-      test: t.Optional(t.Boolean()),
-    }),
-    response: t.Object({
-      id: t.Number(),
-      username: t.String(),
-      password: t.String(),
-      test: t.Optional(t.Boolean()),
-    }),
-  });
+  .decorate('db', () => db())
+  .use(todoModel)
+  .get(
+    '/:id',
+    async ({ db, params }) => {
+      const { id } = params;
+      const query = { _id: new ObjectId(id) };
+      const data = await db().collection<Todo>('test').findOne(query);
+
+      if (!data) throw new NotFoundError();
+
+      return { ...data, _id: data._id.toString() };
+    },
+    {
+      params: t.Object({
+        id: t.String(),
+      }),
+      response: 'response',
+    }
+  )
+  .post(
+    '/',
+    async ({ db, body }) => {
+      const { insertedId } = await db()
+        .collection<Todo>('test')
+        .insertOne(body);
+
+      return { ...body, _id: insertedId.toString() };
+    },
+    {
+      body: 'todo',
+      response: 'response',
+    }
+  );
