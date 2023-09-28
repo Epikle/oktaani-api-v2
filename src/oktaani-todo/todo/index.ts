@@ -1,5 +1,4 @@
 import { Elysia, NotFoundError, t } from 'elysia';
-import { ObjectId } from 'mongodb';
 
 import { db } from '../../db';
 import { type SharedEntry, SharedModel } from './model';
@@ -8,10 +7,10 @@ export const todoShareRoutes = new Elysia({ prefix: '/share' })
   .decorate('db', () => db())
   .use(SharedModel)
   .get(
-    '/:id',
+    '/:cid',
     async ({ db, params }) => {
-      const { id } = params;
-      const query = { _id: new ObjectId(id) };
+      const { cid } = params;
+      const query = { 'col.id': cid };
       const data = await db().collection<SharedEntry>('test').findOne(query);
 
       if (!data) throw new NotFoundError();
@@ -20,7 +19,7 @@ export const todoShareRoutes = new Elysia({ prefix: '/share' })
     },
     {
       params: t.Object({
-        id: t.String(),
+        cid: t.String(),
       }),
       response: 'response',
       detail: {
