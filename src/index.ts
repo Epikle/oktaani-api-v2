@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia';
 import swagger from '@elysiajs/swagger';
+import { cors } from '@elysiajs/cors';
 
 import { errorHandler } from './errorHandler';
 import { todoRoutes } from './oktaani-todo';
@@ -20,14 +21,20 @@ const app = new Elysia()
       },
     })
   )
+  .use(cors())
   .use(errorHandler)
+  .get('/', () => 'Hello :)')
   .get('/health', () => 'OK', {
     response: t.String({ description: 'Returns OK string for health check.' }),
     detail: {
       tags: ['health'],
     },
   })
-  .group('/v2', (app) => app.use(todoRoutes))
+  .group('/api', (app) =>
+    app
+      .get('/', () => 'Oktaani API')
+      .group('/v2', (app) => app.get('/', () => 'Using v2').use(todoRoutes))
+  )
   .listen(process.env.PORT ?? 5000);
 
 console.log(`Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
